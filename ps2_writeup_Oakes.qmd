@@ -4,11 +4,21 @@ author: "Suzy Oakes"
 date: today
 format: 
   html:
-  toc: true
-  embed-resources: true
+    toc: true
+    embed-resources: true
 ---
 
 **GitHub repo:** <https://github.com/SEOAKES/EC_422_PS2_Oakes>
+
+```{r}
+#| echo: false
+
+library(tidyquant)
+library(tidyverse)
+library(knitr)
+library(lava)
+library(recipes)
+```
 
 ## Data
 
@@ -17,7 +27,6 @@ The data utilized in this document are the unemployment rate, collected monthly 
 These are the first few rows of the raw unemployment rate data.
 
 ```{r}
-#|echo: false
 
 unemp_raw <- tq_get(
   c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"),
@@ -31,7 +40,12 @@ head(unemp_raw)
 These are the first few rows of transformed data that are a little easier to understand and include a column for the change in the unemployment rate.
 
 ```{r}
-#|echo: false
+
+dir.create("data", showWarnings = FALSE)
+
+write_rds(unemp_raw, "data/unemp_raw.rds")
+
+unemp_raw = read_rds("data/unemp_raw.rds")
 
 unemp <- unemp_raw |>
   rename(unemployment_rate = price) |>
@@ -89,6 +103,9 @@ The second table summarizes the mean, minimum, and maximum unemployment rates fo
 
 ```{r}
 
+unemp_recent <- unemp |>
+  filter(date > "2014-12-01")
+
 unemp_recent_summary <-  unemp_recent |>
   group_by(region) |>
   summarize(
@@ -104,6 +121,15 @@ The third table contains the [top five **increases** in the unemployment rate]{.
 
 ```{r}
 
+unemp_top_increases <- unemp |>
+  group_by(region) |>
+  slice_max(unemployment_rate_change, n = 5) |>
+  arrange(region, desc(unemployment_rate_change)) |>
+  ungroup()
+
+unemp_no_covid <- unemp |>
+  filter_out(c(date >= "2020-01-01" & date <= "2020-12-01"))
+
 unemp_top_increases_no_covid <- unemp_no_covid |>
   group_by(region) |>
   slice_max(unemployment_rate_change, n = 5) |>
@@ -116,6 +142,12 @@ kable(unemp_top_increases_no_covid)
 The final table contains the [top five **decreases** in the unemployment rate]{.underline} from month to month for each region, including the date and unemployment rate corresponding to each top increase. [This table does not include any data points from 2020.]{.underline}
 
 ```{r}
+
+unemp_top_decreases <- unemp |>
+  group_by(region) |>
+  slice_min(unemployment_rate_change, n = 5) |>
+  arrange(region, desc(unemployment_rate_change)) |>
+  ungroup()
 
 unemp_top_decreases_no_covid <- unemp_no_covid |>
   group_by(region) |>
@@ -191,4 +223,6 @@ ggplot(unemp_no_covid, aes(x = date, y = unemployment_rate, color = region)) +
 
 ## Reflection
 
-3r
+This problem set was very instructive regarding basic data cleaning, wrangling, and visualization techniques. It was rather straight-forward and easy to follow for the most part, which I was glad for, but as if I were a child being thrown into a pool in order to teach me how to swim, certain sections that only said something to the effect of "use this command to do this" or just "do this" without explicit code instructions naturally made me stumble. For example, it took me a little bit to figure out where `fct_reorder` was supposed to go in the code for `ggplot` in order to actually get it to work.
+
+This is not unexpected nor unwelcome. It is these challenges that allow one to *actually* learn and not just copy all of someone else's code. Now, after having completed this problem set, I can say that I feel a lot more comfortable figuring things out when I get stuck. More and more, I'm feeling like I'm beginning to understand R. I also appreciated the introduction to Quarto! I feel a lot better about making a smooth, easy-to-understand document to display results from R. Before, I had only used R Markdown!
