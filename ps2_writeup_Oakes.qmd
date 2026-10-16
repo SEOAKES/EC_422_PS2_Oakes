@@ -68,7 +68,7 @@ head(unemp)
 
 ## Wrangling
 
-To get a better sense of what the data is saying on a holistic level, it's been split into four tables.
+To get a better sense of what the data is saying on a holistic level, it's been split into four tables. The following section includes these tables and brief descriptions of them.
 
 The first table summarizes the [mean, minimum, and maximum unemployment rates for each region]{.underline} in the data between 1976 and 2026.
 
@@ -127,6 +127,67 @@ kable(unemp_top_decreases_no_covid)
 ```
 
 ## Visualization
+
+In order to visualize the data effectively, four graphs were created to represent the data. The following section includes these graphs and brief descriptions of them.
+
+[**Line plot**]{.underline}
+
+The first graph is a line plot of the unemployment rate from 1976-2026, sectioned out by region.
+
+```{r}
+
+ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +
+  labs(title = "Unemployment Rate by US Region, 1976-2026", 
+       x = "Unemployment Rate", 
+       y = "Date") +
+  theme_minimal()
+```
+
+[**Regionally-split line plot**]{.underline}
+
+The second graph pulls from the same data as the first graph, but each line of data that represents the data of a particular region is placed into its own graph.
+
+Due to the squishing of all these graphs in a smaller space, the date ranges for each graph have disappeared or become difficult to read. The date ranges remain the same as the first graph: monthly data points from 1976 to 2026.
+
+```{r}
+ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +
+  labs(title = "Unemployment Rate by US Region, 1976-2026", 
+       x = "Unemployment Rate", 
+       y = "Date") +
+  facet_wrap(~region) +
+  theme_minimal()
+```
+
+[**Bar chart**]{.underline}
+
+The third graph is a bar chart pulling data from the unemployment summary table. In particular, the bar graph is ordering, from lowest to highest, the mean unemployment rate by region between 1976 and 2026.
+
+```{r}
+
+ggplot(unemp_summary, aes(x = fct_reorder(region, mean_rate), y = mean_rate, 
+                          fill = region))  +
+  geom_col() +
+  labs(title = "Mean Unemployment Rate by US Region, 1976-2026", 
+       x = "Region", 
+       y = "Mean Unemployment Rate") +
+  theme_minimal()
+```
+
+[**Something I find interesting in the data: a line plot of the unemployment rate without 2020**]{.underline}
+
+For my own choice of data to plot, I decided to make a line plot of the unemployment rate by region, excluding the year 2020. I was curious as to how this line plot might differ from the first line plot; I wanted to see visually what an unemployment rate without COVID might have looked like. Of course, shocks to the unemployment rate continued even after 2020, but excluding that year, it is striking how much the data changes.
+
+```{r}
+
+ggplot(unemp_no_covid, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +
+  labs(title = "Unemployment Rate by US Region, 1976-2026 (excluding 2020)", 
+       x = "Unemployment Rate", 
+       y = "Date") +
+  theme_minimal()
+```
 
 ## Reflection
 
