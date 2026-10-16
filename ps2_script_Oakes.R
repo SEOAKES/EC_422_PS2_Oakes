@@ -83,10 +83,17 @@ unemp_top_increases_no_covid <- unemp_no_covid |>
   group_by(region) |>
   slice_max(unemployment_rate_change, n = 5) |>
   arrange(region, desc(unemployment_rate_change)) |>
-ungroup() 
+  ungroup() 
   
-  unemp_top_decreases_no_covid <- unemp_no_covid |>
+unemp_top_decreases_no_covid <- unemp_no_covid |>
   group_by(region) |>
   slice_min(unemployment_rate_change, n = 5) |>
   arrange(region, desc(unemployment_rate_change)) |>
   ungroup()
+
+ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +
+  labs(title = "Unemployment Rate by US Region, 1976-2026", 
+       x = "Unemployment Rate", 
+       y = "Date") +
+      theme_minimal()
