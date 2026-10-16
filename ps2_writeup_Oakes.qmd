@@ -1,0 +1,133 @@
+---
+title: "Problem Set 2"
+author: "Suzy Oakes"
+date: today
+format: 
+  html:
+  toc: true
+  embed-resources: true
+---
+
+**GitHub repo:** <https://github.com/SEOAKES/EC_422_PS2_Oakes>
+
+## Data
+
+The data utilized in this document are the unemployment rate, collected monthly from January 1976 to September 2026. Included in the data are the overall US unemployment rate as well as the state-level unemployment rates for California, New York, Oregon, and Texas. Data columns have been added and altered to more clearly communicate the nature of data points ("price" was turned into "unemployment_rate", for example). An additional data column representing the change in the unemployment rate from month to month has also been added to the data.
+
+These are the first few rows of the raw unemployment rate data.
+
+```{r}
+#|echo: false
+
+unemp_raw <- tq_get(
+  c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"),
+  get  = "economic.data",
+  from = "1976-01-01"
+)
+
+head(unemp_raw)
+```
+
+These are the first few rows of transformed data that are a little easier to understand and include a column for the change in the unemployment rate.
+
+```{r}
+#|echo: false
+
+unemp <- unemp_raw |>
+  rename(unemployment_rate = price) |>
+  mutate(
+    region = case_when(
+      symbol == "UNRATE" ~ "United States",
+      symbol == "ORUR" ~ "Oregon",
+      symbol == "CAUR" ~ "California",
+      symbol == "TXUR" ~ "Texas",
+      symbol == "NYUR" ~ "New York"
+    )
+  )
+
+unemp <- unemp |>
+  arrange(region, date) |>
+  group_by(region) |>
+  mutate(
+    unemployment_rate = replace(
+      unemployment_rate,
+      date == as.Date("2025-10-01"),
+      unemployment_rate[date == as.Date("2025-09-01")]
+    )
+  ) |>
+  ungroup()
+
+unemp <- unemp |>
+  arrange(region, date) |>
+  group_by(region) |>
+  mutate(unemployment_rate_change = unemployment_rate - lag(unemployment_rate)) |>
+  ungroup()
+
+head(unemp)
+```
+
+## Wrangling
+
+To get a better sense of what the data is saying on a holistic level, it's been split into four tables.
+
+The first table summarizes the [mean, minimum, and maximum unemployment rates for each region]{.underline} in the data between 1976 and 2026.
+
+```{r}
+
+unemp_summary <-  unemp |>
+  group_by(region) |>
+  summarize(
+    mean_rate = mean(unemployment_rate, na.rm = TRUE),
+    min_rate = min(unemployment_rate, na.rm = TRUE),
+    max_rate = max(unemployment_rate, na.rm = TRUE)
+  ) 
+
+kable(unemp_summary)
+```
+
+The second table summarizes the mean, minimum, and maximum unemployment rates for each region, [but only between 2015 and 2026.]{.underline}
+
+```{r}
+
+unemp_recent_summary <-  unemp_recent |>
+  group_by(region) |>
+  summarize(
+    mean_rate = mean(unemployment_rate, na.rm = TRUE),
+    min_rate = min(unemployment_rate, na.rm = TRUE),
+    max_rate = max(unemployment_rate, na.rm = TRUE)
+  )
+
+kable(unemp_recent_summary)
+```
+
+The third table contains the [top five **increases** in the unemployment rate]{.underline} from month to month for each region, including the date and unemployment rate corresponding to each top increase. [This table does not include any data points from 2020.]{.underline}
+
+```{r}
+
+unemp_top_increases_no_covid <- unemp_no_covid |>
+  group_by(region) |>
+  slice_max(unemployment_rate_change, n = 5) |>
+  arrange(region, desc(unemployment_rate_change)) |>
+  ungroup() 
+
+kable(unemp_top_increases_no_covid)
+```
+
+The final table contains the [top five **decreases** in the unemployment rate]{.underline} from month to month for each region, including the date and unemployment rate corresponding to each top increase. [This table does not include any data points from 2020.]{.underline}
+
+```{r}
+
+unemp_top_decreases_no_covid <- unemp_no_covid |>
+  group_by(region) |>
+  slice_min(unemployment_rate_change, n = 5) |>
+  arrange(region, desc(unemployment_rate_change)) |>
+  ungroup()
+
+kable(unemp_top_decreases_no_covid)
+```
+
+## Visualization
+
+## Reflection
+
+3r

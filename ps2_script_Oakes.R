@@ -1,5 +1,6 @@
 library(tidyquant)
 library(tidyverse)
+library(knitr)
 
 unemp_raw <- tq_get(
    c("UNRATE", "ORUR", "CAUR", "TXUR", "NYUR"),
@@ -97,3 +98,28 @@ ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
        x = "Unemployment Rate", 
        y = "Date") +
       theme_minimal()
+
+ggplot(unemp, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +
+  labs(title = "Unemployment Rate by US Region, 1976-2026", 
+       x = "Unemployment Rate", 
+       y = "Date") +
+  facet_wrap(~region) +
+  theme_minimal()
+
+ggplot(unemp_summary, aes(x = fct_reorder(region, mean_rate), y = mean_rate, 
+                          fill = region))  +
+  geom_col() +
+  labs(title = "Mean Unemployment Rate by US Region, 1976-2026", 
+       x = "Region", 
+       y = "Mean Unemployment Rate") +
+  theme_minimal()
+
+ggplot(unemp_no_covid, aes(x = date, y = unemployment_rate, color = region)) +
+  geom_line() +
+  labs(title = "Unemployment Rate by US Region, 1976-2026 (excluding 2020)", 
+       x = "Unemployment Rate", 
+       y = "Date") +
+  theme_minimal()
+
+
